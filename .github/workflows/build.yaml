@@ -32,7 +32,7 @@ jobs:
         run: ls -lah ./.next
 
       - name: Build local container
-        run: docker build -t localbuild/app:latest
+        run: docker build -t localbuild/app:latest .
 
       - name: Scan image
         uses: anchore/scan-action@v3
