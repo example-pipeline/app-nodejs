@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Uncomment this line if you want to have some vulnerabilities in your Docker image.
+RUN apk update && apk upgrade
+
 WORKDIR /app
 
 ENV NODE_ENV production
