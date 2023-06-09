@@ -29,7 +29,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: List
-        run: ls -lah
+        run: ls -lah ./.next
 
       - name: Build local container
         uses: docker/build-push-action@v4
