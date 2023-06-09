@@ -32,11 +32,7 @@ jobs:
         run: ls -lah ./.next
 
       - name: Build local container
-        uses: docker/build-push-action@v4
-        with:
-          tags: localbuild/app:latest
-          push: false
-          load: true
+        run: docker build -t localbuild/app:latest
 
       - name: Scan image
         uses: anchore/scan-action@v3
