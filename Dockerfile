@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM docker.io/library/node:18-alpine
 
 # Uncomment this line if you want to have some vulnerabilities in your Docker image.
 RUN apk update && apk upgrade
