@@ -28,7 +28,7 @@ jobs:
         run: npm run build
 
       - name: Build local container
-        run: buildah build -t localbuild/app:latest .
+        run: podman build -t app:latest .
 
       - name: Scan image
         uses: anchore/scan-action@v3
