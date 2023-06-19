@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - tools_explore
   workflow_dispatch:
 
 permissions:
