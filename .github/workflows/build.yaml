@@ -26,6 +26,7 @@ jobs:
       - name: Log into NPM
         run: |
           echo registry=https://npm.pkg.github.com/example-pipeline >> .npmrc
+          echo //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }} >> .npmrc
 
       - name: Where
         run: pwd
