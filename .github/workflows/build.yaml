@@ -22,18 +22,15 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+          registry-url: https://npm.pkg.github.com/
 
-      - name: Login to Github Packages for NPM
-        run: npm config --userconfig "${{ github.workspace }}/.npmrc" set //npm.pkg.github.com/:_authToken "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Proxy NPM packages via Github
-        run: npm config --userconfig "${{ github.workspace}}/.npmrc" set registry="https://npm.pkg.github.com/example-pipeline"
-
-      - name: Install dependencies
+      - name: Print config
         run: npm config list --json
 
       - name: Install dependencies
-        run: npm i
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: npm run build
