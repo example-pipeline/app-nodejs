@@ -31,14 +31,10 @@ jobs:
       - name: Build local container
         run: podman build -t app:latest .
 
-      # - name: Scan image
-      #   uses: anchore/scan-action@v3
-      #   id: scan
-      #   with:
-      #     image: "localbuild/app:latest"
-      #     fail-build: false
+      - name: Grype scan
+        run: grype -o sarif --file grype.sarif .
 
-      # - name: Upload Anchore scan SARIF report
-      #   uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: ${{ steps.scan.outputs.sarif }}
+      - name: Upload Grype scan SARIF report
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ./grype.sarif
