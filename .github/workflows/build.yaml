@@ -23,11 +23,11 @@ jobs:
         with:
           node-version: 18
 
-      - name: Proxy NPM packages via Github
-        run: npm config set registry="https://npm.pkg.github.com/example-pipeline/"
-
-      - name: Authenticate with Github NPM Packages.
-        run: npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+      - name: Log into NPM
+        run: |
+          echo registry=https://npm.pkg.github.com/ >> .npmrc
+          echo @example-pipeline:registry=https://npm.pkg.github.com/ >> .npmrc
+          echo //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }} >> .npmrc
 
       - name: Print config
         run: npm config list --json
