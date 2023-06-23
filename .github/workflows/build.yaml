@@ -23,7 +23,7 @@ jobs:
           node-version: 18
 
       - name: Login to Github Packages for NPM
-        run: echo "//registry.npmjs.org/:_authToken=${{ GITHUB_TOKEN }}" > ~/.npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
       - name: Install dependencies
         run: npm ci
