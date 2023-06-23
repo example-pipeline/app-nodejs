@@ -27,6 +27,9 @@ jobs:
       - name: Proxy NPM packages via Github
         run: npm config set registry="https://npm.pkg.github.com/example-pipeline"
 
+      - name: Authenticate with Github NPM Packages.
+        run: npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+
       - name: Print config
         run: npm config list --json
 
