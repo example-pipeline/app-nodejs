@@ -24,6 +24,9 @@ jobs:
           node-version: 18
           registry-url: https://npm.pkg.github.com/
 
+      - name: Proxy NPM packages via Github
+        run: npm config set registry="https://npm.pkg.github.com/example-pipeline"
+
       - name: Print config
         run: npm config list --json
 
