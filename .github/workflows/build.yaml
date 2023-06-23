@@ -35,8 +35,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Build local container
-        run: podman build -t app:latest .
+      # At the moment, looks like you can't run Podman in Docker(!)
+      # https://github.com/containers/podman/issues/10802
+      #- name: Build local container
+        #run: podman build -t app:latest .
 
       - name: Grype scan
         run: grype -o sarif --file grype.sarif .
