@@ -23,20 +23,6 @@ jobs:
         with:
           node-version: 18
 
-      - name: Log into NPM
-        run: |
-          echo registry=https://npm.pkg.github.com/example-pipeline >> .npmrc
-          echo //npm.pkg.github.com/example-pipeline/:_authToken=${{ secrets.GITHUB_TOKEN }} >> .npmrc
-
-      - name: Where
-        run: pwd
-
-      - name: Print npmrc
-        run: cat .npmrc
-
-      - name: Print config
-        run: npm config list --json
-
       - name: Install dependencies
         run: npm ci --verbose
 
