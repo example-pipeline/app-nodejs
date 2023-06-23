@@ -25,7 +25,7 @@ jobs:
 
       - name: Log into NPM
         run: |
-          echo registry=https://npm.pkg.github.com/example-pipeline
+          echo registry=https://npm.pkg.github.com/example-pipeline >> .npmrc
 
       - name: Where
         run: pwd
