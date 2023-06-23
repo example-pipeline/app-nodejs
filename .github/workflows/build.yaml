@@ -11,6 +11,7 @@ permissions:
   actions: read
   contents: read
   security-events: write
+  packages: read
 
 jobs:
   build:
@@ -23,7 +24,10 @@ jobs:
           node-version: 18
 
       - name: Login to Github Packages for NPM
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+        run: npm config --userconfig "${{ github.workspace }}/.npmrc" set //npm.pkg.github.com/:_authToken "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Proxy NPM packages via Github
+        run: npm config --userconfig "${{ github.workspace}}/.npmrc" set registry="https://npm.pkg.github.com/example-pipeline"
 
       - name: Install dependencies
         run: npm ci
