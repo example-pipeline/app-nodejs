@@ -30,6 +30,9 @@ jobs:
         run: npm config --userconfig "${{ github.workspace}}/.npmrc" set registry="https://npm.pkg.github.com/example-pipeline"
 
       - name: Install dependencies
+        run: npm config list --json
+
+      - name: Install dependencies
         run: npm ci
 
       - name: Build
