@@ -33,6 +33,11 @@ jobs:
       # https://github.com/containers/podman/issues/10802
       #- name: Build local container
         #run: podman build -t app:latest .
+      - name: Build Docker
+        run: |
+          nix build .#docker
+          podman load < result
+          podman images
 
       - name: Grype scan
         run: grype -o sarif --file grype.sarif .
