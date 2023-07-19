@@ -14,7 +14,7 @@
       app = nl2nix.v2.build {
         src = ./.;
         nodejs = pkgs.nodejs-18_x;
-        buildCommands = [ "npm run build" ];
+        buildCommands = [ "HOME=$PWD" "npm run build" ];
         installPhase = ''
           mkdir -p $out
           cp -r .next/standalone $out/app
@@ -23,21 +23,22 @@
           cp -r .next/static $out/app/.next/static
         '';
       };
+      nextUser = pkgs.runCommand "user" {} ''
+        mkdir -p $out/etc
+        echo "nextjs:x:1000:1000:nextjs:/home/nextjs:/bin/false" > $out/etc/passwd
+        echo "nextjs:x:1000:" > $out/etc/group
+        echo "nextjs:!:1::::::" > $out/etc/shadow
+      '';
       dockerImage = pkgs.dockerTools.buildImage {
         name = "app";
         tag = "latest";
 
-        runAsRoot = ''
-          #!${pkgs.runtimeShell}
-          ${pkgs.dockerTools.shadowSetup}
-          groupadd -r nextjs
-          useradd -r -g nextjs nextjs
-        '';
         copyToRoot = [
           # Uncomment the coreutils and bash if you want to be able to use a shell environment
           # inside the container.
           #pkgs.coreutils
           #pkgs.bash
+          nextUser
           pkgs.nodejs-18_x
           app
         ];
