@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-nodejs-mvp
+  namespace: dso-mvp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-nodejs
+  template:
+    metadata:
+      labels:
+        app: app-nodejs
+    spec:
+      securityContext:
+        fsGroup: 200
+      containers:
+        - name: app-nodejs-mvp
+          image: '{{ACR_INSTANCE}}.azurecr.io/ashers/app-nodejs:main'
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /manifest.json
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+            initialDelaySeconds: 60
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /manifest.json
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+            initialDelaySeconds: 30
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2G
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      restartPolicy: Always
+
