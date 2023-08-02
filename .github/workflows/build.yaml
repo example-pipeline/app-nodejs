@@ -4,14 +4,17 @@ on:
   push:
     branches:
       - main
-      - tools_explore
   workflow_dispatch:
+
+env:
+  REGISTRY: ${{ vars.ACR_INSTANCE }}.azurecr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 permissions:
   actions: read
   contents: read
   security-events: write
-  packages: read
+  packages: write
 
 jobs:
   build:
@@ -22,27 +25,69 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+          registry-url: '${{ vars.NEXUS_INSTANCE }}/repository/npm/'
 
-      - name: Install dependencies
-        run: npm ci --verbose
-
-      - name: Build
-        run: npm run build
-
-      # At the moment, looks like you can't run Podman in Docker(!)
-      # https://github.com/containers/podman/issues/10802
-      #- name: Build local container
-        #run: podman build -t app:latest .
-      - name: Build Docker
-        run: |
-          nix build .#docker
-          podman load < result
-          podman images
-
-      - name: Grype scan
+      - name: Security scan
+        id: security-scan
         run: grype -o sarif --file grype.sarif .
 
       - name: Upload Grype scan SARIF report
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./grype.sarif
+
+      - name: Build Docker
+        run: |
+          nix build -L .#docker
+
+      - name: Auth Docker
+        run: crane auth login ${{ env.REGISTRY }} -u '${{ secrets.ACR_USERNAME }}' -p '${{ secrets.ACR_PASSWORD }}'
+
+      - name: Push Docker
+        run: |
+          export TARGET=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          export TARGET_LOWERCASE=${TARGET,,}
+          echo $TARGET_LOWERCASE
+          gzip --decompress --stdout --force < ./result > result.tar
+          crane push ./result.tar $TARGET_LOWERCASE
+          rm result && rm result.tar
+  deploy:
+    runs-on: [self-hosted]
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Connect to Azure
+        id: connect-to-azure
+        run: |
+          az login --service-principal -u ${{ secrets.AKS_SERVICE_PRINCIPAL_ID }} -p ${{ secrets.AKS_SERVICE_PRINCIPAL_PW }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+          az account set --subscription ${{ vars.AZURE_SUBSCRIPTION }}
+
+      - name: Get AKS Credentials
+        id: get-aks-creds
+        run: |
+          RESOURCE_GROUP=$(az aks list --query "[?name == 'dev-uks-aks-001'].resourceGroup" -o tsv)
+          az aks get-credentials --overwrite-existing --name ${{ vars.AKS_INSTANCE }} --resource-group $RESOURCE_GROUP
+          kubelogin convert-kubeconfig -l azurecli
+
+      - name: Deploy to AKS
+        id: deploy-to-aks
+        run: |
+          # kubectl create namespace ${{ vars.APP_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          # replace namespace in deployment yaml file
+          sed -ri "s/<NAME_SPACE>/${{ vars.APP_NAMESPACE }}/g" deployment.yaml
+          # replace namespace in service yaml file
+          sed -ri "s/<NAME_SPACE>/${{ vars.APP_NAMESPACE }}/g" service.yaml
+          # replace ACR placeholder in deployment yaml
+          sed -ri "s/<ACR_INSTANCE>/${{ env.REGISTRY }}/g" deployment.yaml
+
+          kubectl apply --namespace ${{ vars.APP_NAMESPACE }} -f deployment.yaml
+          kubectl apply --namespace ${{ vars.APP_NAMESPACE }} -f service.yaml
+      
+      - name: Output IP Address of service
+        id: output-service-ip-address
+        run: |
+           LBIP=$(kubectl get service -n ep-mvp-test-1 -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+           echo "Application URL: http://${LBIP}"
+
+

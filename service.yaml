@@ -2,11 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: app-nodejs-service
-  namespace: dso-mvp
+  namespace: <NAME_SPACE>
   annotations:
       prometheus.io/scrape: 'true'
       prometheus.io/path:   /
-      prometheus.io/port:   '8081'
+      prometheus.io/port:   '3000'
       service.beta.kubernetes.io/azure-load-balancer-internal: "true"
 spec:
   selector: 
