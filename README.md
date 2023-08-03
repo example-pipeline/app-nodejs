@@ -35,6 +35,18 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 ## Tasks
 
+### docker-build
+
+```
+docker build -t app-nodejs:main .
+```
+
+### docker-run
+
+```
+docker run -p 3000:3000 app-nodejs:main
+```
+
 ### nix-build
 
 ```
@@ -54,7 +66,12 @@ podman run --rm -p 3000:3000 localhost/app:latest
 nix copy --derivation --to file://$PWD/export
 nix copy --to file://$PWD/export #.default
 wget -O ./export/npmlock2nix.tar.gz https://github.com/nix-community/npmlock2nix/tarball/9197bbf397d76059a76310523d45df10d2e4ca81
+tar -xzvf ./export/npmlock2nix.tar.gz -C ./export
+rm ./export/npmlock2nix.tar.gz
+mv ./export/nix-community-npmlock2nix-* ./export/npmlock2nix
 ```
+
+Be careful when copying to ensure everything is copied: `cp -r ./export/* ~/nix-exports/app-nodejs/`
 
 ### nix-build-sandboxed
 
