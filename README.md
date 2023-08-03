@@ -47,3 +47,17 @@ podman load < result
 ```
 podman run --rm -p 3000:3000 localhost/app:latest
 ```
+
+### nix-copy
+
+```
+nix copy --derivation --to file://$PWD/export
+nix copy --to file://$PWD/export #.default
+wget -O ./export/npmlock2nix.tar.gz https://github.com/nix-community/npmlock2nix/tarball/9197bbf397d76059a76310523d45df10d2e4ca81
+```
+
+### nix-build-sandboxed
+
+```
+docker run -it --rm --network none -v `pwd`/export:/home/nix/export -v `pwd`:/nodejs-app nixpkgs-offline
+```
