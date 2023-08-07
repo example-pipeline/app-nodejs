@@ -36,21 +36,24 @@ jobs:
         with:
           sarif_file: ./grype.sarif
 
+      - name: Build
+        run: |
+          npm ci && npm run build
+
       - name: Build Docker
         run: |
-          nix build -L .#docker
+          docker build -t app-nodejs:main .
 
       - name: Auth Docker
-        run: crane auth login ${{ env.REGISTRY }} -u '${{ secrets.ACR_USERNAME }}' -p '${{ secrets.ACR_PASSWORD }}'
+        run: docker login ${{ env.REGISTRY }} -u '${{ secrets.ACR_USERNAME }}' -p '${{ secrets.ACR_PASSWORD }}'
 
       - name: Push Docker
         run: |
           export TARGET=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           export TARGET_LOWERCASE=${TARGET,,}
           echo $TARGET_LOWERCASE
-          gzip --decompress --stdout --force < ./result > result.tar
-          crane push ./result.tar $TARGET_LOWERCASE
-          rm result && rm result.tar
+          docker tag app-nodejs:main $TARGET_LOWERCASE
+          docker push
   deploy:
     runs-on: [self-hosted]
     needs: build
