@@ -17,7 +17,7 @@ spec:
         fsGroup: 200
       containers:
         - name: app-nodejs-mvp
-          image: '<ACR_INSTANCE>/ashers/app-nodejs:main'
+          image: '<TARGET>'
           imagePullPolicy: IfNotPresent
           resources:
             requests:

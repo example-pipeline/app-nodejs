@@ -73,9 +73,13 @@ jobs:
       - name: Deploy to AKS
         id: deploy-to-aks
         run: |
+          export TARGET=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          export TARGET_LOWERCASE=${TARGET,,}
           # kubectl create namespace ${{ vars.APP_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
           # replace namespace in deployment yaml file
-          sed -ri "s/<NAME_SPACE>/${{ vars.APP_NAMESPACE }}/g" deployment.yaml
+          sed -ri "s/<NAME_SPACE>/${TARGET_LOWERCASE}/g" deployment.yaml
+          # replace TARGET in deployment yaml
+          sed -ri "s/<TARGET>/${{ vars.APP_NAMESPACE }}/g" deployment.yaml
           # replace namespace in service yaml file
           sed -ri "s/<NAME_SPACE>/${{ vars.APP_NAMESPACE }}/g" service.yaml
           # replace ACR placeholder in deployment yaml
