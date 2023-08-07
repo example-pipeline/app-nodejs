@@ -69,6 +69,7 @@ jobs:
       - name: Get AKS Credentials
         id: get-aks-creds
         run: |
+          # Only for AKS. not ASH AKSE
           RESOURCE_GROUP=$(az aks list --query "[?name == 'dev-uks-aks-001'].resourceGroup" -o tsv)
           az aks get-credentials --overwrite-existing --name ${{ vars.AKS_INSTANCE }} --resource-group $RESOURCE_GROUP
           kubelogin convert-kubeconfig -l azurecli
@@ -88,12 +89,15 @@ jobs:
           # replace ACR placeholder in deployment yaml
           sed -ri "s/<ACR_INSTANCE>/${{ env.REGISTRY }}/g" deployment.yaml
 
+          # Deploy the application
           kubectl apply --namespace ${{ vars.APP_NAMESPACE }} -f deployment.yaml
+          # And then expose the service
           kubectl apply --namespace ${{ vars.APP_NAMESPACE }} -f service.yaml
       
       - name: Output IP Address of service
         id: output-service-ip-address
         run: |
+           # Output the IP URL for the service
            LBIP=$(kubectl get service -n ep-mvp-test-1 -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
            echo "Application URL: http://${LBIP}"
 
