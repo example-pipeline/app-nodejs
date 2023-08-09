@@ -36,13 +36,9 @@ jobs:
         with:
           sarif_file: ./grype.sarif
 
-      - name: Build
-        run: |
-          npm ci && npm run build
-
       - name: Build Docker
         run: |
-          docker build -t app-nodejs:main .
+          nix build -L .#docker
 
       - name: Auth Docker
         run: docker login ${{ env.REGISTRY }} -u '${{ secrets.ACR_USERNAME }}' -p '${{ secrets.ACR_PASSWORD }}'
@@ -52,8 +48,9 @@ jobs:
           export TARGET=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           export TARGET_LOWERCASE=${TARGET,,}
           echo $TARGET_LOWERCASE
-          docker tag app-nodejs:main $TARGET_LOWERCASE
-          docker push
+          gzip --decompress --stdout --force < ./result > result.tar
+          crane push ./result.tar $TARGET_LOWERCASE
+          rm result && rm result.tar
   deploy:
     runs-on: [self-hosted]
     needs: build
@@ -81,13 +78,13 @@ jobs:
           export TARGET_LOWERCASE=${TARGET,,}
           # kubectl create namespace ${{ vars.APP_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
           # replace namespace in deployment yaml file
-          sed -ri "s/<NAME_SPACE>/${TARGET_LOWERCASE}/g" deployment.yaml
+          sed -ri "s/<NAME_SPACE>/${{ vars.APP_NAMESPACE }}/g" deployment.yaml
           # replace TARGET in deployment yaml
-          sed -ri "s/<TARGET>/${{ vars.APP_NAMESPACE }}/g" deployment.yaml
+          sed -ri "s|<TARGET>|${TARGET_LOWERCASE}|g" deployment.yaml
           # replace namespace in service yaml file
           sed -ri "s/<NAME_SPACE>/${{ vars.APP_NAMESPACE }}/g" service.yaml
           # replace ACR placeholder in deployment yaml
-          sed -ri "s/<ACR_INSTANCE>/${{ env.REGISTRY }}/g" deployment.yaml
+          sed -ri "s|<ACR_INSTANCE>|${{ env.REGISTRY }}|g" deployment.yaml
 
           # Deploy the application
           kubectl apply --namespace ${{ vars.APP_NAMESPACE }} -f deployment.yaml
