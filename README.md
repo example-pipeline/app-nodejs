@@ -65,6 +65,8 @@ podman run --rm -p 3000:3000 localhost/app:latest
 ```
 nix copy --derivation --to file://$PWD/export
 nix copy --to file://$PWD/export #.default
+nix copy --to file://$PWD/export #.docker
+nix copy ---derivation -to file://$PWD/export #.docker
 wget -O ./export/npmlock2nix.tar.gz https://github.com/nix-community/npmlock2nix/tarball/9197bbf397d76059a76310523d45df10d2e4ca81
 tar -xzvf ./export/npmlock2nix.tar.gz -C ./export
 rm ./export/npmlock2nix.tar.gz
