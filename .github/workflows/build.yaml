@@ -9,6 +9,7 @@ on:
 env:
   REGISTRY: ${{ vars.ACR_INSTANCE }}.azurecr.io
   IMAGE_NAME: ${{ github.repository }}
+  NPM_REGISTRY: ${{ vars.NEXUS_INSTANCE }}/repository/npm/
 
 permissions:
   actions: read
@@ -25,17 +26,17 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: '${{ vars.NEXUS_INSTANCE }}/repository/npm/'
+          registry-url: '${{ vars.NPM_REGISTRY }}'
 
-      - name: Security scan
-        id: security-scan
+      - name: Security scan - Grype
+        id: security-scan-grype
         run: grype -o sarif --file grype.sarif .
 
       - name: Upload Grype scan SARIF report
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./grype.sarif
-
+      
       - name: Build Docker
         run: |
           nix build -L .#docker
